@@ -75,7 +75,7 @@ export async function createUser(
     const passwordHash = await hashPassword(password)
 
     const result = await sql`
-      INSERT INTO users (email, password_hash, full_name, phone, address, role)
+      INSERT INTO users (email, password, full_name, phone, address, role)
       VALUES (${email}, ${passwordHash}, ${fullName}, ${phone || null}, ${address || null}, 'member')
       RETURNING id, email, full_name, phone, address, role, created_at
     `
@@ -93,7 +93,7 @@ export async function authenticateUser(
 ): Promise<{ user: User; token: string } | { error: string }> {
   try {
     const users = await sql`
-      SELECT id, email, password_hash, full_name, phone, address, role, created_at
+      SELECT id, email, password, full_name, phone, address, role, created_at
       FROM users WHERE email = ${email}
     `
 
@@ -102,7 +102,7 @@ export async function authenticateUser(
     }
 
     const user = users[0]
-    const isValid = await verifyPassword(password, user.password_hash)
+    const isValid = await verifyPassword(password, user.password)
 
     if (!isValid) {
       return { error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }

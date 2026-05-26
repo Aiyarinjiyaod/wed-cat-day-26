@@ -59,3 +59,8 @@ export type cart_items = Prisma.cart_itemsModel
  * 
  */
 export type orders = Prisma.ordersModel
+/**
+ * Model users
+ * 
+ */
+export type users = Prisma.usersModel

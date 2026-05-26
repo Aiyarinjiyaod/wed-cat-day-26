@@ -83,12 +83,16 @@ export function Header({ cartCount = 0 }: HeaderProps) {
             >
               สินค้าทั้งหมด
             </Link>
-            <Link 
-              href="/orders/track" 
-              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
-            >
-              ติดตามคำสั่งซื้อ
-            </Link>
+            
+            {/* 🔴 จุดที่ 1: ซ่อนเมนูติดตามคำสั่งซื้อ (สำหรับจอคอม) */}
+            {user && (
+              <Link 
+                href="/orders/track" 
+                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+              >
+                ติดตามคำสั่งซื้อ
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -144,16 +148,19 @@ export function Header({ cartCount = 0 }: HeaderProps) {
               </>
             )}
 
-            <Link href="/cart">
-              <Button variant="outline" size="icon" className="relative">
-                <ShoppingCart className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-medium">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            {/* 🔴 จุดที่ 2: ซ่อนปุ่มตะกร้าสินค้า */}
+            {user && (
+              <Link href="/cart">
+                <Button variant="outline" size="icon" className="relative">
+                  <ShoppingCart className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-medium">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+            )}
 
             <Button
               variant="ghost"
@@ -183,13 +190,17 @@ export function Header({ cartCount = 0 }: HeaderProps) {
               >
                 สินค้าทั้งหมด
               </Link>
-              <Link 
-                href="/orders/track" 
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ติดตามคำสั่งซื้อ
-              </Link>
+              
+              {/* 🔴 จุดที่ 3: ซ่อนเมนูติดตามคำสั่งซื้อ (สำหรับจอมือถือ) */}
+              {user && (
+                <Link 
+                  href="/orders/track" 
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  ติดตามคำสั่งซื้อ
+                </Link>
+              )}
               
               {/* Mobile Auth Links */}
               {!loading && (
