@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { ShoppingCart, Cat, Menu, X, User, LogIn, LogOut, UserPlus, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,13 +26,43 @@ interface UserData {
 
 export function Header({ cartCount = 0 }: HeaderProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // 🟢 จุดที่แก้ 1: เพิ่มตัวแปร actualCartCount สำหรับเก็บเลขตะกร้า
+  const [actualCartCount, setActualCartCount] = useState(0)
+
   useEffect(() => {
     fetchUser()
   }, [])
+
+  // 🟢 จุดที่แก้ 2: เพิ่มสูตรดึงข้อมูลตะกร้าแบบทะลวง Cache และติดตามการเปลี่ยนหน้า (pathname)
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const res = await fetch(`/api/cart?t=${new Date().getTime()}`, {
+          cache: 'no-store'
+        })
+        const data = await res.json()
+        
+        if (data && Array.isArray(data)) {
+          const totalItems = data.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
+          setActualCartCount(totalItems)
+        } else {
+          setActualCartCount(0)
+        }
+      } catch (error) {
+        console.error("Error calculating cart:", error)
+      }
+    }
+
+    fetchCartCount()
+
+    window.addEventListener("cartUpdated", fetchCartCount)
+    return () => window.removeEventListener("cartUpdated", fetchCartCount)
+  }, [pathname])
 
   const fetchUser = async () => {
     try {
@@ -84,7 +114,6 @@ export function Header({ cartCount = 0 }: HeaderProps) {
               สินค้าทั้งหมด
             </Link>
             
-            {/* 🔴 จุดที่ 1: ซ่อนเมนูติดตามคำสั่งซื้อ (สำหรับจอคอม) */}
             {user && (
               <Link 
                 href="/orders/track" 
@@ -96,7 +125,6 @@ export function Header({ cartCount = 0 }: HeaderProps) {
           </nav>
 
           <div className="flex items-center gap-2">
-            {/* Auth Buttons */}
             {!loading && (
               <>
                 {user ? (
@@ -148,14 +176,14 @@ export function Header({ cartCount = 0 }: HeaderProps) {
               </>
             )}
 
-            {/* 🔴 จุดที่ 2: ซ่อนปุ่มตะกร้าสินค้า */}
             {user && (
               <Link href="/cart">
                 <Button variant="outline" size="icon" className="relative">
                   <ShoppingCart className="w-5 h-5" />
-                  {cartCount > 0 && (
+                  {/* 🟢 จุดที่แก้ 3: เปลี่ยนมาแสดงผลตัวแปร actualCartCount ตรงนี้ครับ */}
+                  {actualCartCount > 0 && (
                     <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-medium">
-                      {cartCount}
+                      {actualCartCount}
                     </span>
                   )}
                 </Button>
@@ -191,7 +219,6 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                 สินค้าทั้งหมด
               </Link>
               
-              {/* 🔴 จุดที่ 3: ซ่อนเมนูติดตามคำสั่งซื้อ (สำหรับจอมือถือ) */}
               {user && (
                 <Link 
                   href="/orders/track" 
@@ -202,7 +229,6 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                 </Link>
               )}
               
-              {/* Mobile Auth Links */}
               {!loading && (
                 <div className="border-t border-border mt-2 pt-2">
                   {user ? (
